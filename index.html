@@ -379,14 +379,39 @@
     position: absolute;
     inset: 0;
     z-index: 2;
-    background: #000;
+    background: #090b10;
   }
+  .stage-loader {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    padding: 16px;
+    text-align: center;
+  }
+  .spinner {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 3px solid rgba(255, 255, 255, 0.14);
+    border-top-color: var(--accent);
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
   .stage-iframe-wrap iframe {
+    position: relative;
+    z-index: 2;
     width: 100%;
     height: 100%;
     border: 0;
     display: block;
-    background: #000;
+    background: transparent;
   }
 
   /* Now Playing Meta & Action Strip */
@@ -796,13 +821,18 @@
   @media (max-width: 1099px) {
     .app-shell {
       grid-template-columns: minmax(0, 1fr);
-      gap: 20px;
+      gap: 18px;
       padding: 16px 16px 36px;
     }
+    .cinema-col { display: contents; }
+    .stage-card { order: 1; }
+    .meta-panel { order: 2; margin-top: 0; }
     .playlist-rail {
+      order: 3;
       position: static;
       max-height: none;
     }
+    .tabs-card { order: 4; margin-top: 0; }
     .playlist-scroll {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -838,31 +868,42 @@
     .play-orb { width: 62px; height: 62px; }
 
     .meta-panel {
-      margin-top: 12px;
+      margin-top: 10px;
       padding-inline: 14px;
-      gap: 12px;
+      gap: 10px;
     }
-    .track-h1 { font-size: 1.08rem; }
-    .track-stepper { width: 100%; justify-content: space-between; }
-    .track-stepper .icon-btn { flex: 1; }
+    .track-h1 { font-size: 1.02rem; }
+    .meta-tags { gap: 6px; margin-top: 6px; }
+    .meta-pill { padding: 3px 8px; font-size: 0.72rem; }
+    .track-stepper { display: none; }
 
     .action-strip {
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      scrollbar-width: none;
-      -webkit-overflow-scrolling: touch;
-      margin-inline: -14px;
-      padding: 2px 14px 4px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 7px;
+      overflow: visible;
+      margin-inline: 0;
+      padding: 0;
     }
-    .action-strip::-webkit-scrollbar { display: none; }
+    .action-strip .icon-btn {
+      min-height: 38px;
+      padding: 0 10px;
+      font-size: 0.76rem;
+      border-radius: 10px;
+    }
 
-    .tabs-card {
-      margin: 12px 14px 0;
+    /* Put Playlist ABOVE lyrics on mobile so user immediately sees all 9 video thumbnails! */
+    .cinema-col { display: contents; }
+    .stage-card { order: 1; }
+    .meta-panel { order: 2; }
+    .playlist-rail {
+      order: 3;
+      margin-inline: 14px;
       border-radius: 14px;
     }
-
-    .playlist-rail {
-      margin-inline: 14px;
+    .tabs-card {
+      order: 4;
+      margin: 4px 14px 0;
       border-radius: 14px;
     }
     .mobile-search-box {
@@ -952,7 +993,12 @@
     <section class="cinema-col" aria-label="پخش‌کننده اصلی">
       <!-- Theater Video Stage -->
       <div class="stage-card" id="stageCard">
-        <div class="stage-iframe-wrap" id="iframeWrap"></div>
+        <div class="stage-iframe-wrap" id="iframeWrap">
+          <div class="stage-loader" id="stageLoader">
+            <span class="spinner" aria-hidden="true"></span>
+            <span>در حال اتصال به پلیر ابری Google Drive...</span>
+          </div>
+        </div>
 
         <!-- Poster-First Click-to-Play Facade -->
         <div class="stage-poster-layer" id="posterLayer" role="button" tabindex="0" aria-label="پخش موزیک‌ویدیو">
@@ -1127,7 +1173,8 @@ function showToast(msg) {
 
 function stopIframe() {
   state.isPlaying = false;
-  els.iframeWrap.innerHTML = '';
+  const old = els.iframeWrap.querySelector('iframe');
+  if (old) old.remove();
   els.posterLayer.classList.remove('hidden');
   els.togglePlayText.textContent = 'پخش درون‌سایتی';
 }
@@ -1136,7 +1183,8 @@ function startPlayback() {
   const t = TRACKS[state.activeIdx];
   state.isPlaying = true;
   els.posterLayer.classList.add('hidden');
-  els.iframeWrap.innerHTML = '';
+  const old = els.iframeWrap.querySelector('iframe');
+  if (old) old.remove();
   const ifr = document.createElement('iframe');
   ifr.src = t.preview;
   ifr.title = t.title;
