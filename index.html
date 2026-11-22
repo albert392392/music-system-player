@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="theme-color" content="#0b0d12"/>
+<title>@Music_System_Ir | پخش آنلاین موزیک‌ویدیوها با زیرنویس فارسی</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css"/>
+<style>
+  :root {
+    --bg: #0b0d12;
+    --surface: #131722;
+    --surface-2: #191f2e;
+    --border: #252d40;
+    --gold: #ffd700;
+    --gold-dim: rgba(255, 215, 0, 0.14);
+    --text: #f4f5f7;
+    --muted: #aab2c5;
+    --radius: clamp(8px, 1.2vw, 16px);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: var(--bg); color: var(--text); overflow-x: clip; scroll-behavior: smooth; }
+  body {
+    background: radial-gradient(circle at top center, #141a29 0%, var(--bg) 55%);
+    color: var(--text);
+    font-family: 'Vazirmatn', system-ui, -apple-system, 'Segoe UI', Tahoma, Arial, sans-serif;
+    line-height: 1.65;
+    min-height: 100dvh;
+    padding: max(10px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(28px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+    overflow-x: clip;
+  }
+  .wrap { width: 100%; max-width: 1440px; margin: 0 auto; }
+  .hdr {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin-bottom: clamp(8px, 1.3vw, 16px);
+  }
+  .hdr h1 {
+    font-size: clamp(0.95rem, 1.55vw, 1.38rem);
+    font-weight: 700;
+    color: var(--gold);
+    direction: ltr;
+    text-align: left;
+    min-width: 0;
+    flex: 1 1 260px;
+    overflow-wrap: anywhere;
+    line-height: 1.35;
+  }
+  .badge {
+    background: var(--surface-2);
+    color: var(--gold);
+    padding: 6px 13px;
+    border-radius: 999px;
+    font-size: clamp(0.75rem, 0.95vw, 0.9rem);
+    font-weight: 600;
+    direction: ltr;
+    text-decoration: none;
+    border: 1px solid #2e3850;
+    white-space: nowrap;
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .badge:hover { border-color: var(--gold); background: #202739; }
+
+  /* Viewport-aware theater stage */
+  .stage-shell { width: 100%; display: flex; justify-content: center; }
+  .player-box {
+    position: relative;
+    width: min(100%, calc((100dvh - 185px) * 16 / 9));
+    min-width: 0;
+    aspect-ratio: 16 / 9;
+    background: radial-gradient(circle at center, #181f30 0%, #07090d 100%);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: 0 14px 44px rgba(0, 0, 0, 0.72);
+    border: 1px solid var(--border);
+  }
+  .player-fallback {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 16px;
+    gap: 6px;
+    color: var(--muted);
+    font-size: clamp(0.76rem, 1vw, 0.94rem);
+    z-index: 1;
+    pointer-events: none;
+  }
+  .player-fallback strong { color: var(--gold); font-size: clamp(0.88rem, 1.25vw, 1.12rem); }
+  iframe {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+    background: transparent;
+  }
+
+  /* Controls & Hints */
+  .bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    margin-top: clamp(10px, 1.4vw, 16px);
+  }
+  .hints { flex: 1 1 300px; min-width: 0; }
+  .hint { font-size: clamp(0.8rem, 1vw, 0.96rem); color: var(--muted); }
+  .sub-hint { font-size: clamp(0.73rem, 0.88vw, 0.85rem); color: #7d879c; margin-top: 2px; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: clamp(0.78rem, 0.92vw, 0.92rem);
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid #2b354d;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: border-color 0.15s, color 0.15s, background-color 0.15s, transform 0.1s;
+  }
+  .btn:hover { border-color: var(--gold); color: var(--gold); background: var(--surface-2); }
+  .btn:active { transform: scale(0.98); }
+  .btn.primary { background: #272009; border-color: var(--gold); color: var(--gold); font-weight: 700; }
+  .btn:focus-visible, .badge:focus-visible, .card:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+
+  /* Playlist Grid */
+  .section-title {
+    margin: clamp(18px, 2.4vw, 26px) 0 12px;
+    font-size: clamp(0.94rem, 1.25vw, 1.16rem);
+    font-weight: 700;
+    color: #e6eaf3;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 275px), 1fr));
+    gap: 10px;
+  }
+  .card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+    cursor: pointer;
+    padding: 12px 14px;
+    min-height: 54px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    color: #eef1f7;
+    text-decoration: none;
+    direction: ltr;
+    min-width: 0;
+    transition: border-color 0.15s, background-color 0.15s;
+  }
+  .card:hover { border-color: #776618; background: #161b29; }
+  .card.active { border-color: var(--gold); background: var(--surface-2); box-shadow: 0 0 0 1px var(--gold-dim); }
+  .card .title {
+    font-size: clamp(0.82rem, 0.98vw, 0.96rem);
+    font-weight: 700;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+    min-width: 0;
+  }
+  .card .meta {
+    font-size: clamp(0.74rem, 0.88vw, 0.86rem);
+    color: var(--gold);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Bilingual Lyrics */
+  .lyrics-box {
+    margin-top: clamp(18px, 2vw, 24px);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: clamp(14px, 2vw, 22px);
+  }
+  .lyrics-grid { display: grid; grid-template-columns: 1fr; gap: 4px; }
+  .lyric-row { padding: 10px 0; border-bottom: 1px solid #1d2435; }
+  .lyric-row:last-child { border-bottom: 0; padding-bottom: 2px; }
+  .de { color: var(--gold); font-size: clamp(0.84rem, 1vw, 1.02rem); font-weight: 700; direction: ltr; text-align: left; overflow-wrap: anywhere; }
+  .fa { color: #ffffff; font-size: clamp(0.88rem, 1.08vw, 1.12rem); margin-top: 3px; overflow-wrap: anywhere; }
+
+  /* Mobile Portrait */
+  @media (max-width: 639px) {
+    body { padding: max(8px, env(safe-area-inset-top)) 8px max(22px, env(safe-area-inset-bottom)) 8px; }
+    .hdr { flex-direction: column; align-items: stretch; gap: 6px; }
+    .hdr h1 { flex: none; text-align: left; }
+    .badge { align-self: flex-start; }
+    .player-box { width: 100%; border-radius: 10px; }
+    .actions { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .btn { width: 100%; padding: 8px 10px; font-size: 0.78rem; white-space: normal; text-align: center; line-height: 1.3; }
+  }
+
+  /* Mobile Landscape: true full-width theater fit without half-cut bottom text */
+  @media (max-height: 520px) and (orientation: landscape) {
+    body { padding: 6px max(12px, env(safe-area-inset-right)) 20px max(12px, env(safe-area-inset-left)); }
+    .hdr { margin-bottom: 6px; gap: 6px; }
+    .hdr h1 { font-size: 0.92rem; }
+    .badge { min-height: 30px; padding: 4px 10px; font-size: 0.74rem; }
+    .player-box {
+      width: 100%;
+      height: calc(100dvh - 54px);
+      max-height: 440px;
+      aspect-ratio: auto;
+    }
+  }
+
+  /* Large Desktop & Smart TV */
+  @media (min-width: 1600px) {
+    body { padding: 28px 40px 48px; }
+    .wrap { max-width: 1620px; }
+    .player-box { width: min(100%, calc((100dvh - 210px) * 16 / 9)); }
+    .btn { min-height: 50px; padding: 11px 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hdr">
+    <h1 id="trackTitle">GZUZ XXL Mix (1 Stunde) — feat. Kolja Goldstein, Lacazette</h1>
+    <a class="badge" href="https://t.me/Music_System_Ir" target="_blank" rel="noopener">@Music_System_Ir • Cloud Streaming</a>
+  </header>
+
+  <main>
+    <div class="stage-shell">
+      <div class="player-box">
+        <div class="player-fallback">
+          <strong id="fallbackTitle">GZUZ XXL Mix 1 Stunde</strong>
+          <span>در حال بارگذاری پلیر ابری گوگل درایو… اگر نمایش داده نشد، دکمه «تمام‌صفحه / مرورگر» را بزنید.</span>
+        </div>
+        <iframe
+          id="player"
+          title="Video Stream Player"
+          src="https://drive.google.com/file/d/1c7GHJbW68tEy1nkpri-nma8rogoQ1A4x/preview"
+          allow="autoplay; fullscreen; picture-in-picture"
+          allowfullscreen>
+        </iframe>
+      </div>
+    </div>
+
+    <div class="bar">
+      <div class="hints">
+        <p class="hint">پخش آنلاین و دائمی ۲۴ ساعته از سرورهای ابری (مستقل از سیستم) بدون نیاز به دانلود کامل.</p>
+        <p class="sub-hint">اگر داخل مرورگر داخلی تلگرام یا بدون فیلترشکن پلیر لود نشد، از دکمه «تمام‌صفحه / مرورگر» استفاده کنید.</p>
+      </div>
+      <div class="actions">
+        <a class="btn primary" id="btnView" href="https://drive.google.com/file/d/1c7GHJbW68tEy1nkpri-nma8rogoQ1A4x/view?usp=drivesdk" target="_blank" rel="noopener">تمام‌صفحه / مرورگر</a>
+        <a class="btn" id="btnDownload" href="https://drive.google.com/uc?export=download&id=1c7GHJbW68tEy1nkpri-nma8rogoQ1A4x" target="_blank" rel="noopener">دانلود مستقیم (707.9 MB)</a>
+        <button class="btn" id="copyBtn" type="button">کپی لینک ترک</button>
+        <a class="btn" href="https://t.me/Music_System_Ir" target="_blank" rel="noopener">کانال <bdi dir="ltr">@Music_System_Ir</bdi></a>
+      </div>
+    </div>
+
+    <h2 class="section-title">تمام موزیک‌ویدیوهای زیرنویس‌شده (9 ترک آماده پخش):</h2>
+    <div class="grid" id="playlistGrid"></div>
+
+    <section class="lyrics-box" aria-label="گزیده متن و ترجمه">
+      <h2 class="section-title" style="margin-top:0;">گزیده متن و ترجمه:</h2>
+      <div class="lyrics-grid" id="lyricsGrid"></div>
+    </section>
+  </main>
+</div>
+
+<script>
+  const TRACKS = [{"slug": "gzuz_xxl_mix_1_stunde", "title": "GZUZ XXL Mix (1 Stunde) — feat. Kolja Goldstein, Lacazette", "short": "GZUZ XXL Mix 1 Stunde", "dur": "50:46", "mb": "707.9", "id": "1c7GHJbW68tEy1nkpri-nma8rogoQ1A4x", "preview": "https://drive.google.com/file/d/1c7GHJbW68tEy1nkpri-nma8rogoQ1A4x/preview", "view": "https://drive.google.com/file/d/1c7GHJbW68tEy1nkpri-nma8rogoQ1A4x/view?usp=drivesdk", "download": "https://drive.google.com/uc?export=download&id=1c7GHJbW68tEy1nkpri-nma8rogoQ1A4x", "lyrics": [{"de": "Alles geht um Dollars, geht um Tonn'n", "fa": "همه‌چی سرِ دلاره، سرِ تن‌ها باره"}, {"de": "Eine Mio auf dem Konto, ich will zehn", "fa": "یه میلیون تو حسابمه، ولی من ده تا می‌خوام"}, {"de": "Niemals 31er, für immer 187, ja", "fa": "هیچ‌وقت خبرچین نمی‌شم، تا ابد صدوهشتادوهفت، آره"}, {"de": "Para machen meine Expertise, meine Freunde sind sehr stabile", "fa": "پول درآوردن تخصص منه، رفیقام خیلی محکم و پای کارن"}, {"de": "Und wenn du nichts zahlst, find' ich dich an der Konsti", "fa": "و اگه پولشو ندی، تو ایستگاهِ کنستی پیدات می‌کنم"}]}, {"slug": "wiz_khalifa_-_midnight_smoke", "title": "Wiz Khalifa — Midnight Smoke", "short": "Wiz Khalifa - Midnight Smoke", "dur": "07:33", "mb": "67.1", "id": "1d-ND0SNHriWM_AHNNvxWsuBxSdq59uHp", "preview": "https://drive.google.com/file/d/1d-ND0SNHriWM_AHNNvxWsuBxSdq59uHp/preview", "view": "https://drive.google.com/file/d/1d-ND0SNHriWM_AHNNvxWsuBxSdq59uHp/view?usp=drivesdk", "download": "https://drive.google.com/uc?export=download&id=1d-ND0SNHriWM_AHNNvxWsuBxSdq59uHp", "lyrics": [{"de": "Midnight smoke, windows down, we float", "fa": "دودِ نیمه‌شب، شیشه‌ها پایینه، انگار رو هوا شناوریم"}, {"de": "Stars overhead while we ride through the coast", "fa": "ستاره‌ها بالای سرمونن وقتی کنار ساحل می‌رونیم"}, {"de": "Money on the mind, let the soul stay gold", "fa": "فکر و ذکرمون پوله، ولی بذار روحمون طلایی و ناب بمونه"}, {"de": "Every setback was a disguise, now we rise", "fa": "هر عقب‌گرد یه نقابِ پنهان برای جهش بود، حالا اوج می‌گیریم"}]}, {"slug": "quavo_ft_young_thug_-_slide", "title": "Quavo ft. Young Thug — Slide (Extended)", "short": "Quavo ft. Young Thug - Slide", "dur": "07:00", "mb": "90.0", "id": "1Ld89jrkeWaChbFAgR1r3XvoUHTEqN-uw", "preview": "https://drive.google.com/file/d/1Ld89jrkeWaChbFAgR1r3XvoUHTEqN-uw/preview", "view": "https://drive.google.com/file/d/1Ld89jrkeWaChbFAgR1r3XvoUHTEqN-uw/view?usp=drivesdk", "download": "https://drive.google.com/uc?export=download&id=1Ld89jrkeWaChbFAgR1r3XvoUHTEqN-uw", "lyrics": [{"de": "We just pulled up on the side, watch 'em slide", "fa": "یهو کنار خیابون پیچیدیم وایسادیم، ببین چطور لیز می‌خورن و درمی‌رن"}, {"de": "Got them demons in the coupe, takin' flight", "fa": "شیطون‌ها تو ماشینِ کوپه نشستن و دارن پرواز می‌کنن"}, {"de": "Green slime drippin' on the carpet", "fa": "اسلایم سبزِ وای‌اس‌ال داره روی فرش چکه می‌کنه"}, {"de": "We the biggest bosses in the market", "fa": "ما گنده‌ترین رئیس‌های این بازاریم"}]}, {"slug": "quavo_x_future_-_i_smell_like_money", "title": "Quavo x Future — I Smell Like Money", "short": "Quavo x Future - I Smell Like Money", "dur": "09:58", "mb": "92.2", "id": "1sDJFNJEgQEWl1KaC8875Mu-LdJ5wiT9F", "preview": "https://drive.google.com/file/d/1sDJFNJEgQEWl1KaC8875Mu-LdJ5wiT9F/preview", "view": "https://drive.google.com/file/d/1sDJFNJEgQEWl1KaC8875Mu-LdJ5wiT9F/view?usp=drivesdk", "download": "https://drive.google.com/uc?export=download&id=1sDJFNJEgQEWl1KaC8875Mu-LdJ5wiT9F", "lyrics": [{"de": "I smell like money everywhere I go", "fa": "هر جا پا می‌ذارم بوی پول و اسکناس می‌دم"}, {"de": "Diamonds dancin' on my neck in the dark", "fa": "الماس‌های دور گردنم تو دل تاریکی می‌رقصن"}]}, {"slug": "doja_cat_-_streets", "title": "Doja Cat — Streets (Official Video)", "short": "Doja Cat - Streets", "dur": "04:34", "mb": "61.4", "id": "1GkD4OlDSbStNA_J7pM-c6XOY-LnvHR-x", "preview": "https://drive.google.com/file/d/1GkD4OlDSbStNA_J7pM-c6XOY-LnvHR-x/preview", "view": "https://drive.google.com/file/d/1GkD4OlDSbStNA_J7pM-c6XOY-LnvHR-x/view?usp=drivesdk", "download": "https://drive.google.com/uc?export=download&id=1GkD4OlDSbStNA_J7pM-c6XOY-LnvHR-x", "lyrics": [{"de": "I found it hard to find someone like you", "fa": "برام خیلی سخت بود یکی مثل تو رو پیدا کنم"}, {"de": "I can't sleep no more, in my head, we belong", "fa": "دیگه خوابم نمی‌بره، توی ذهنم ما مالِ همیم"}, {"de": "Damn papa, you a rare breed, no comparin'", "fa": "لعنتی پسر، تو از یه نسلِ نایابی، اصلاً قابل مقایسه نیستی"}, {"de": "When other chickens tryna get in my coop", "fa": "وقتی بقیه می‌خوان بیان تو لونه و حریمِ من"}]}, {"slug": "lady_xo_-_okay", "title": "Lady XO — Okay", "short": "Lady XO - Okay", "dur": "04:20", "mb": "34.3", "id": "17d3P-tIferqdIr70lrqBjdMX5JMrv7xY", "preview": "https://drive.google.com/file/d/17d3P-tIferqdIr70lrqBjdMX5JMrv7xY/preview", "view": "https://drive.google.com/file/d/17d3P-tIferqdIr70lrqBjdMX5JMrv7xY/view?usp=drivesdk", "download": "https://drive.google.com/uc?export=download&id=17d3P-tIferqdIr70lrqBjdMX5JMrv7xY", "lyrics": [{"de": "Got it out the mud so deep, that's why I always play for keeps", "fa": "از دلِ گل‌ولای کشیدمش بیرون، واسه همینه تا تهش پایبندم"}, {"de": "Yeah, I'm okay, I don't need you because I'm okay", "fa": "آره، من حالم خوبه، نیازی بهت ندارم چون خودکفام و اوکی‌ام"}, {"de": "I'm a diamond in the rough", "fa": "من یه الماسِ نایاب تو دل خاکم"}]}, {"slug": "lady_xo_-_rose_gold", "title": "Lady XO — ROSE GOLD", "short": "Lady XO - ROSE GOLD", "dur": "02:54", "mb": "67.5", "id": "1erUARRhqktIYHAHGqkXWL1S4cBU8YVhT", "preview": "https://drive.google.com/file/d/1erUARRhqktIYHAHGqkXWL1S4cBU8YVhT/preview", "view": "https://drive.google.com/file/d/1erUARRhqktIYHAHGqkXWL1S4cBU8YVhT/view?usp=drivesdk", "download": "https://drive.google.com/uc?export=download&id=1erUARRhqktIYHAHGqkXWL1S4cBU8YVhT", "lyrics": [{"de": "Rose gold shine through the late night rain", "fa": "درخششِ رزگلد زیر بارونِ آخر شب"}, {"de": "Came from nothing, now they know the name", "fa": "از هیچ شروع کردیم، حالا همه اسممون رو بلدن"}]}, {"slug": "sa4_-_hafencity", "title": "SA4 — HafenCity (187 Strassenbande)", "short": "SA4 - HafenCity", "dur": "01:56", "mb": "46.0", "id": "1xiINyLr_1nX_JjsfY6gS6jxEQOYlTu8n", "preview": "https://drive.google.com/file/d/1xiINyLr_1nX_JjsfY6gS6jxEQOYlTu8n/preview", "view": "https://drive.google.com/file/d/1xiINyLr_1nX_JjsfY6gS6jxEQOYlTu8n/view?usp=drivesdk", "download": "https://drive.google.com/uc?export=download&id=1xiINyLr_1nX_JjsfY6gS6jxEQOYlTu8n", "lyrics": [{"de": "HafenCity, 187 Strassenbande", "fa": "هافن‌سیتی، باندِ خیابانیِ صدوهشتادوهفت"}, {"de": "Zwischen Containern und Luxus-Karren in Hamburg", "fa": "بین کانتینرها و ماشین‌های لوکس تو هامبورگ"}]}, {"slug": "klangspiel_x_anna_grey_-_dein_lied", "title": "KLANGSPIEL x Anna Grey — Dein Lied", "short": "KLANGSPIEL x Anna Grey - Dein Lied", "dur": "02:08", "mb": "33.9", "id": "1o07aIT3FAL_nbb7qnADrNz5uZHnhSono", "preview": "https://drive.google.com/file/d/1o07aIT3FAL_nbb7qnADrNz5uZHnhSono/preview", "view": "https://drive.google.com/file/d/1o07aIT3FAL_nbb7qnADrNz5uZHnhSono/view?usp=drivesdk", "download": "https://drive.google.com/uc?export=download&id=1o07aIT3FAL_nbb7qnADrNz5uZHnhSono", "lyrics": [{"de": "Und wenn die Nacht uns trägt, hörst du dein Lied", "fa": "و وقتی شب ما رو با خودش می‌بره، آهنگِ خودتو می‌شنوی"}, {"de": "Lichter der Stadt leuchten nur für uns zwei", "fa": "چراغ‌های شهر فقط برای ما دو نفر روشنن"}]}];
+  const grid = document.getElementById("playlistGrid");
+  const lyricsGrid = document.getElementById("lyricsGrid");
+  const player = document.getElementById("player");
+  const titleEl = document.getElementById("trackTitle");
+  const fallbackEl = document.getElementById("fallbackTitle");
+  const btnView = document.getElementById("btnView");
+  const btnDownload = document.getElementById("btnDownload");
+  const copyBtn = document.getElementById("copyBtn");
+
+  let activeSlug = TRACKS[0].slug;
+
+  function renderLyrics(items) {
+    lyricsGrid.innerHTML = "";
+    items.forEach((row) => {
+      const div = document.createElement("div");
+      div.className = "lyric-row";
+      const de = document.createElement("div");
+      de.className = "de";
+      de.textContent = row.de;
+      const fa = document.createElement("div");
+      fa.className = "fa";
+      fa.textContent = row.fa;
+      div.append(de, fa);
+      lyricsGrid.appendChild(div);
+    });
+  }
+
+  function toFaDigits(str) {
+    const map = ["۰","۱","۲","۳","۴","۵","۶","۷","۸","۹"];
+    return String(str).replace(/[0-9]/g, (d) => map[d]).replace(".", "٫");
+  }
+
+  function selectTrack(slug, scrollTop) {
+    const t = TRACKS.find((x) => x.slug === slug) || TRACKS[0];
+    activeSlug = t.slug;
+    document.title = t.short + " | @Music_System_Ir";
+    titleEl.textContent = t.title;
+    fallbackEl.textContent = t.short;
+    if (player.getAttribute("src") !== t.preview) {
+      player.setAttribute("src", t.preview);
+    }
+    btnView.setAttribute("href", t.view);
+    btnDownload.setAttribute("href", t.download);
+    btnDownload.textContent = "دانلود فایل (" + toFaDigits(t.mb) + " مگابایت)";
+    renderLyrics(t.lyrics);
+
+    document.querySelectorAll(".card").forEach((c) => {
+      c.classList.toggle("active", c.dataset.slug === t.slug);
+    });
+
+    const url = new URL(window.location.href);
+    url.searchParams.set("v", t.slug);
+    history.replaceState(null, "", url.toString());
+
+    if (scrollTop) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }
+
+  TRACKS.forEach((t) => {
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "card";
+    card.dataset.slug = t.slug;
+    const spanTitle = document.createElement("span");
+    spanTitle.className = "title";
+    spanTitle.textContent = t.short;
+    const spanMeta = document.createElement("span");
+    spanMeta.className = "meta";
+    spanMeta.textContent = t.mb + " MB • " + t.dur;
+    card.append(spanTitle, spanMeta);
+    card.addEventListener("click", () => selectTrack(t.slug, true));
+    grid.appendChild(card);
+  });
+
+  if (copyBtn) {
+    copyBtn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        const orig = copyBtn.textContent;
+        copyBtn.textContent = "کپی شد ✓";
+        setTimeout(() => { copyBtn.textContent = orig; }, 1800);
+      } catch {
+        window.prompt("لینک مستقیم این ویدیو:", window.location.href);
+      }
+    });
+  }
+
+  const initParam = new URLSearchParams(window.location.search).get("v");
+  selectTrack(initParam || TRACKS[0].slug, false);
+</script>
+</body>
+</html>
